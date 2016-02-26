@@ -48,21 +48,27 @@ function install_phpmyadmin {
         # sudo apt-get install phpmyadmin apache2-utils # cli version to ans questions
     
         echo -e "\n--- Install phpmyadmin ---"
-        sudo echo "mysql-server mysql-server/root_password password $DBPASSWD" | debconf-set-selections
-        sudo echo "mysql-server mysql-server/root_password_again password $DBPASSWD" | debconf-set-selections
-        sudo echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
-        sudo echo "phpmyadmin phpmyadmin/app-password-confirm password $DBPASSWD" | debconf-set-selections
-        sudo echo "phpmyadmin phpmyadmin/mysql/admin-pass password $DBPASSWD" | debconf-set-selections
-        sudo echo "phpmyadmin phpmyadmin/mysql/app-pass password $DBPASSWD" | debconf-set-selections
-        sudo echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect none" | debconf-set-selections
+        #echo "mysql-server mysql-server/root_password password $DBPASSWD" | sudo debconf-set-selections
+        #echo "mysql-server mysql-server/root_password_again password $DBPASSWD" | sudo debconf-set-selections
+        echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | sudo debconf-set-selections
+        echo "phpmyadmin phpmyadmin/app-password-confirm password $DBPASSWD" | sudo debconf-set-selections
+        echo "phpmyadmin phpmyadmin/mysql/admin-pass password $DBPASSWD" | sudo debconf-set-selections
+        echo "phpmyadmin phpmyadmin/mysql/app-pass password $DBPASSWD" | sudo debconf-set-selections
+        echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect none" | sudo debconf-set-selections
+
         sudo apt-get -y install phpmyadmin
     fi
+    
+    # If pma tables not set-up correctly redo from cmd line
+    #sudo dpkg-reconfigure phpmyadmin
+    #sudo mv /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
+    # Edit /* Storage database and tables */
 
     # Include phpMyAdmin in Apach confs
     # *Only required using apache2-utils install, debconf version installs vhost and enables
     #echo "" > /etc/apache2/apache2.conf
-    #echo "# Include /etc/phpmyadmin/apache.conf" > /etc/apache2/apache2.conf
-    #echo "<VirtualHost *:80>" > /etc/apache2/apache2.conf
+    #echo "# Include phpmyadmin" > /etc/apache2/apache2.conf
+    #echo "Include /etc/phpmyadmin/apache.conf" > /etc/apache2/apache2.conf
 
     # phpMyAdmin requires mcrypt, install if required and enable
     if [ ! -e "/etc/php5/mods-available/mcrypt.ini" ]; then
@@ -76,13 +82,15 @@ function install_phpmyadmin {
     # Password protect phpMyAdmin using basic authentication
     if [ ! -e "/usr/share/phpmyadmin/.htaccess" ]; then
     
+        # CAN NOT GET THIS TO WORK!
+        #
         # http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
         # command -v htpasswd >/dev/null 2>&1 || { echo "I require foo but it's not installed.  Aborting." >&2; }
-        if [ command -v htpasswd != ""]; then
+        #if [ command -v htpasswd != ""]; then
         #if [ hash htpasswd 2>/dev/null != ""]; then
             echo -e "\n--- Installing apache2-utils for htpasswd ---"
             sudo apt-get --assume-yes --quiet install apache2-utils
-        fi
+        #fi
     
         echo -e "\n--- Setting-up basic authentication ---"
         

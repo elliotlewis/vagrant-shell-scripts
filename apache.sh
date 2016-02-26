@@ -26,17 +26,17 @@ function apache_install {
 function apache_virtualhost {
     # Configures a VirtualHost
 
-    # $1 - required - the hostname of the virtualhost to create
-    # $2 - required - TLD of domain
+    # $1 - required - directory to create
+    # $2 - required - hostname of the virtualhost to create
     # $3 - optional - alternative path to public root
 
     if [ ! -n "$1" ]; then
-        echo "Error: apache_virtualhost() requires the hostname as the first argument"
+        echo "Error: apache_virtualhost() requires the directory as the first argument, eg localhost"
         return 1;
     fi
     
     if [ ! -n "$2" ]; then
-        echo "Error: apache_virtualhost() requires TLD as the second argument, eg dev for http://xx.dev"
+        echo "Error: apache_virtualhost() requires virtualhost as the second argument, eg localhost.dev"
         return 1;
     fi
 
@@ -68,7 +68,7 @@ function apache_virtualhost {
     sudo chown vagrant:vagrant /etc/apache2/sites-available/$1.conf
     
     echo "<VirtualHost *:80>" > /etc/apache2/sites-available/$1.conf
-    echo "    ServerName $1.$2" >> /etc/apache2/sites-available/$1.conf
+    echo "    ServerName $2" >> /etc/apache2/sites-available/$1.conf
     echo "    DocumentRoot $PUBLICROOT" >> /etc/apache2/sites-available/$1.conf
     echo "    ErrorLog /var/www/$1/logs/error.log" >> /etc/apache2/sites-available/$1.conf
     echo "    CustomLog /var/www/$1/logs/access.log combined" >> /etc/apache2/sites-available/$1.conf
@@ -111,6 +111,11 @@ function apache_virtualhost_change_for_craft {
     if [ ! -e "/etc/apache2/sites-available/$1.conf" ]; then
         echo -e "\n--- Error: virtual host '$1' should already exist before amending! --"
         return;
+    fi
+    
+    # Create public if not intalled Craft yet
+    if [ ! -d "/var/www/$1/public_html/public" ]; then
+        sudo mkdir -p /var/www/$1/public_html/public
     fi
 
     # Craft serves site from public
